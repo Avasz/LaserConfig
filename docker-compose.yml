@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  laser-config-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laser-settings-vault
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the current directory into /app inside the container
+      # This allows live-reloading and direct manipulation of host files (like the SQLite DB and uploads folder)
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "alembic upgrade head && 
+             uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
