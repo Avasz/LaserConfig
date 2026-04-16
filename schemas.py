@@ -1,5 +1,21 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
+
+class CommentBase(BaseModel):
+    text: str
+
+class CommentCreate(CommentBase):
+    pass
+
+class Comment(CommentBase):
+    id: int
+    entry_id: int
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
 
 class EntryLogBase(BaseModel):
     material_name: str
@@ -16,6 +32,7 @@ class EntryLogCreate(EntryLogBase):
 
 class EntryLog(EntryLogBase):
     id: int
+    comments: List[Comment] = []
 
     class Config:
         orm_mode = True

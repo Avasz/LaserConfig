@@ -6,9 +6,7 @@
     <title>Laser Settings Vault</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Use Remix Icons for nice icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -67,7 +65,7 @@
         </header>
 
         <!-- Search & Filter Bar -->
-        <div class="glass-panel p-4 rounded-2xl mb-8 flex flex-col md:flex-row gap-4 shadow-sm items-center">
+        <div class="glass-panel p-4 rounded-2xl mb-6 flex flex-col md:flex-row gap-4 shadow-sm items-center">
             <div class="relative w-full flex-grow">
                 <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                 <input type="text" x-model="search" @input.debounce="fetchEntries()" placeholder="Search material..." class="w-full bg-white dark:bg-darkslate-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none transition">
@@ -89,10 +87,16 @@
             </div>
         </div>
 
+        <!-- View Controls -->
+        <div class="flex justify-end mb-4 gap-2">
+            <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-brand-500 text-white shadow-sm' : 'bg-white dark:bg-darkslate-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'" class="p-2 rounded-lg transition"><i class="ri-grid-fill"></i></button>
+            <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-brand-500 text-white shadow-sm' : 'bg-white dark:bg-darkslate-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'" class="p-2 rounded-lg transition"><i class="ri-list-check"></i></button>
+        </div>
+
         <!-- Entries Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <template x-for="entry in entries" :key="entry.id">
-                <div class="bg-white dark:bg-darkslate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-800 group relative">
+                <div @click="openViewModal(entry)" class="cursor-pointer bg-white dark:bg-darkslate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-800 group relative">
                     <!-- Image -->
                     <div class="h-48 bg-gray-200 dark:bg-gray-700 relative">
                         <template x-if="entry.image_path">
@@ -138,34 +142,82 @@
 
                     <!-- Actions overlay on hover -->
                     <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex justify-end gap-2 isolate">
-                        <button @click="openCloneModal(entry)" class="p-2 rounded-lg bg-white/20 hover:bg-white/40 text-white backdrop-blur-md" title="Clone Settings">
+                        <button @click.stop="openEditModal(entry)" class="p-2 rounded-lg bg-white/20 hover:bg-white/40 text-white backdrop-blur-md" title="Edit Settings">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                        <button @click.stop="openCloneModal(entry)" class="p-2 rounded-lg bg-white/20 hover:bg-white/40 text-white backdrop-blur-md" title="Clone Settings">
                             <i class="ri-file-copy-line"></i>
                         </button>
-                        <button @click="deleteEntry(entry.id)" class="p-2 rounded-lg bg-white/20 hover:bg-red-500/80 text-white backdrop-blur-md" title="Delete">
+                        <button @click.stop="deleteEntry(entry.id)" class="p-2 rounded-lg bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-md" title="Delete">
                             <i class="ri-delete-bin-line"></i>
                         </button>
                     </div>
                 </div>
             </template>
-            <!-- Empty state -->
+        </div>
+
+        <!-- Entries Table -->
+        <div x-cloak x-show="viewMode === 'table'" class="overflow-x-auto bg-white dark:bg-darkslate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                    <tr class="bg-gray-50 dark:bg-darkslate-900 border-b border-gray-200 dark:border-gray-700 text-sm uppercase text-gray-500 tracking-wider">
+                        <th class="p-4 font-semibold">Material</th>
+                        <th class="p-4 font-semibold">Type</th>
+                        <th class="p-4 font-semibold">Settings</th>
+                        <th class="p-4 font-semibold">Rating</th>
+                        <th class="p-4 font-semibold text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="entry in entries" :key="entry.id">
+                        <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition cursor-pointer" @click="openViewModal(entry)">
+                            <td class="p-4 font-bold" x-text="entry.material_name"></td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-md bg-gray-100 dark:bg-darkslate-900 text-brand-600 dark:text-brand-400" x-text="entry.task_type"></span>
+                            </td>
+                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300">
+                                S: <span x-text="entry.speed" class="font-semibold text-gray-800 dark:text-gray-100"></span> 
+                                P: <span x-text="entry.power + '%'" class="font-semibold text-gray-800 dark:text-gray-100"></span>
+                                pass: <span x-text="entry.frequency_passes" class="font-semibold text-gray-800 dark:text-gray-100"></span>
+                            </td>
+                            <td class="p-4 text-yellow-400 flex items-center h-full">
+                                <i class="ri-star-fill"></i> <span x-text="entry.rating" class="text-gray-600 dark:text-gray-400 text-sm ml-1 font-semibold"></span>
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex justify-end gap-2 isolate">
+                                    <button @click.stop="openEditModal(entry)" class="p-2 rounded-lg bg-gray-100 dark:bg-darkslate-700 hover:bg-gray-200 dark:hover:bg-darkslate-600 text-gray-600 dark:text-gray-300 transition" title="Edit"><i class="ri-edit-line"></i></button>
+                                    <button @click.stop="openCloneModal(entry)" class="p-2 rounded-lg bg-gray-100 dark:bg-darkslate-700 hover:bg-gray-200 dark:hover:bg-darkslate-600 text-gray-600 dark:text-gray-300 transition" title="Clone"><i class="ri-file-copy-line"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
             <template x-if="entries.length === 0">
-                <div class="col-span-full py-12 text-center text-gray-500">
+                <div class="w-full py-12 text-center text-gray-500">
                     <i class="ri-inbox-line text-5xl mb-2"></i>
-                    <p>No entries found. Try adjusting filters or add a new one.</p>
+                    <p>No entries found. Try adjusting filters.</p>
                 </div>
             </template>
         </div>
+
+        <template x-if="entries.length === 0 && viewMode === 'grid'">
+            <div class="w-full py-12 text-center text-gray-500">
+                <i class="ri-inbox-line text-5xl mb-2"></i>
+                <p>No entries found. Try adjusting filters.</p>
+            </div>
+        </template>
 
         <!-- FAB for Quick Add -->
         <button @click="openModal()" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-brand-600 hover:bg-brand-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-brand-500/50 transition-all transform hover:scale-105 z-40">
             <i class="ri-add-line text-2xl"></i>
         </button>
 
-        <!-- Main Modal -->
+        <!-- Main Form Modal (Add / Edit / Clone) -->
         <div x-cloak x-show="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/60 backdrop-blur-sm p-4">
             <div @click.away="closeModal()" class="bg-white dark:bg-darkslate-800 rounded-2xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform transition-all p-4 md:p-6">
                 <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <h2 class="text-xl md:text-2xl font-bold dark:text-white" x-text="isCloning ? 'Clone Settings' : 'New Entry'"></h2>
+                    <h2 class="text-xl md:text-2xl font-bold dark:text-white" x-text="isEditing ? 'Edit Settings' : (isCloning ? 'Clone Settings' : 'New Entry')"></h2>
                     <button @click="closeModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
                         <i class="ri-close-line text-xl md:text-2xl"></i>
                     </button>
@@ -221,7 +273,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Result</label>
+                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" x-text="isEditing ? 'Update Image (Optional)' : 'Image Result'"></label>
                         <input type="file" @change="handleFileChange" accept="image/*" class="w-full block text-xs md:text-sm text-gray-500 dark:text-gray-400
                             file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-3 md:file:px-4
                             file:rounded-full file:border-0
@@ -243,20 +295,99 @@
             </div>
         </div>
 
+        <!-- View Display Modal -->
+        <div x-cloak x-show="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/60 backdrop-blur-sm p-4">
+            <div @click.away="closeViewModal()" class="bg-white dark:bg-darkslate-800 rounded-2xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform transition-all p-4 md:p-6 flex flex-col max-h-[90vh]">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl md:text-2xl font-bold dark:text-white" x-text="activeEntry?.material_name"></h2>
+                    <button @click="closeViewModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                        <i class="ri-close-line text-xl md:text-2xl"></i>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto pr-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="px-3 py-1 text-xs font-semibold rounded-md bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400" x-text="activeEntry?.task_type"></span>
+                        <div class="flex text-yellow-400 text-sm">
+                            <template x-for="i in 5">
+                                <i :class="i <= (activeEntry?.rating || 0) ? 'ri-star-fill' : 'ri-star-line'"></i>
+                            </template>
+                        </div>
+                    </div>
+
+                    <template x-if="activeEntry?.image_path">
+                        <img :src="'/' + activeEntry?.image_path" class="w-full h-48 md:h-64 object-cover rounded-xl mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
+                    </template>
+
+                    <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-3 grid grid-cols-3 gap-2 mb-4 text-center border border-gray-100 dark:border-gray-800">
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Speed</p>
+                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.speed"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Power</p>
+                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.power + '%'"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Passes</p>
+                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.frequency_passes"></p>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Original Notes</h3>
+                        <p class="text-sm dark:text-gray-200 bg-gray-50 dark:bg-darkslate-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800" x-text="activeEntry?.notes || 'No original notes.'"></p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Situational Comments</h3>
+                        
+                        <div class="space-y-3 mb-4">
+                            <template x-for="comment in activeEntry?.comments" :key="comment.id">
+                                <div class="bg-gray-50 dark:bg-darkslate-900 border border-gray-100 dark:border-gray-800 p-3 rounded-xl text-sm">
+                                    <p class="dark:text-gray-200" x-text="comment.text"></p>
+                                    <p class="text-xs text-brand-600 dark:text-brand-400 mt-2 font-medium" x-text="new Date(comment.created_at).toLocaleString()"></p>
+                                </div>
+                            </template>
+                            <template x-if="!activeEntry?.comments || activeEntry.comments.length === 0">
+                                <p class="text-sm text-gray-500 italic">No comments added yet.</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <form @submit.prevent="submitComment()" class="flex gap-2">
+                        <input x-model="newCommentText" type="text" placeholder="Type a new comment..." required class="flex-grow bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-medium transition flex items-center shadow-md shadow-brand-500/30" :disabled="commentLoading">
+                            <i class="ri-send-plane-fill" x-show="!commentLoading"></i>
+                            <i class="ri-loader-4-line animate-spin" x-show="commentLoading"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
                 isDark: true,
+                viewMode: 'grid', // 'grid' or 'table'
                 entries: [],
                 search: '',
                 filterType: '',
                 filterRating: '',
+
+                // Form Modal State
                 isModalOpen: false,
                 isCloning: false,
+                isEditing: false,
                 loading: false,
                 selectedFile: null,
+                activeEntryId: null,
                 formData: {
                     material_name: '',
                     task_type: 'Cutting',
@@ -266,6 +397,12 @@
                     rating: 3,
                     notes: ''
                 },
+
+                // View Modal State
+                isViewModalOpen: false,
+                activeEntry: null,
+                newCommentText: '',
+                commentLoading: false,
 
                 initData() {
                     if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -296,6 +433,10 @@
                     try {
                         const res = await fetch(url + params.toString());
                         this.entries = await res.json();
+                        // If view modal is open, refresh active entry data
+                        if (this.activeEntry) {
+                            this.activeEntry = this.entries.find(e => e.id === this.activeEntry.id) || this.activeEntry;
+                        }
                     } catch (e) {
                         console.error('Failed to fetch', e);
                     }
@@ -304,6 +445,8 @@
                 openModal() {
                     this.resetForm();
                     this.isCloning = false;
+                    this.isEditing = false;
+                    this.activeEntryId = null;
                     this.isModalOpen = true;
                 },
 
@@ -318,12 +461,41 @@
                         notes: entry.notes
                     };
                     this.selectedFile = null;
+                    this.activeEntryId = null;
                     this.isCloning = true;
+                    this.isEditing = false;
+                    this.isModalOpen = true;
+                },
+
+                openEditModal(entry) {
+                    this.formData = {
+                        material_name: entry.material_name,
+                        task_type: entry.task_type,
+                        speed: entry.speed,
+                        power: entry.power,
+                        frequency_passes: entry.frequency_passes,
+                        rating: entry.rating,
+                        notes: entry.notes
+                    };
+                    this.selectedFile = null;
+                    this.activeEntryId = entry.id;
+                    this.isEditing = true;
+                    this.isCloning = false;
                     this.isModalOpen = true;
                 },
 
                 closeModal() {
                     this.isModalOpen = false;
+                },
+
+                openViewModal(entry) {
+                    this.activeEntry = entry;
+                    this.newCommentText = '';
+                    this.isViewModalOpen = true;
+                },
+                
+                closeViewModal() {
+                    this.isViewModalOpen = false;
                 },
 
                 resetForm() {
@@ -354,8 +526,16 @@
                     }
 
                     try {
-                        await fetch('/api/entries', {
-                            method: 'POST',
+                        let url = '/api/entries';
+                        let method = 'POST';
+                        
+                        if (this.isEditing && this.activeEntryId) {
+                            url = `/api/entries/${this.activeEntryId}`;
+                            method = 'PUT';
+                        }
+
+                        await fetch(url, {
+                            method: method,
                             body: fd
                         });
                         this.closeModal();
@@ -377,6 +557,24 @@
                         this.fetchEntries();
                     } catch (e) {
                         console.error('Failed to delete', e);
+                    }
+                },
+
+                async submitComment() {
+                    if (!this.newCommentText.trim() || !this.activeEntry) return;
+                    this.commentLoading = true;
+                    try {
+                        await fetch(`/api/entries/${this.activeEntry.id}/comments`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: this.newCommentText })
+                        });
+                        this.newCommentText = '';
+                        await this.fetchEntries(); // Reload activeEntry data
+                    } catch (e) {
+                        console.error('Failed to post comment', e);
+                    } finally {
+                        this.commentLoading = false;
                     }
                 }
             }));

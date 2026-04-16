@@ -79,6 +79,58 @@ def read_entry(entry_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Entry not found")
     return db_entry
 
+@app.put("/api/entries/{entry_id}", response_model=schemas.EntryLog)
+async def update_entry(
+    entry_id: int,
+    material_name: str = Form(...),
+    task_type: str = Form(...),
+    speed: float = Form(...),
+    power: float = Form(...),
+    frequency_passes: str = Form(...),
+    rating: int = Form(...),
+    notes: Optional[str] = Form(None),
+    image: Optional[UploadFile] = File(None),
+    db: Session = Depends(get_db)
+):
+    db_entry = db.query(models.EntryLog).filter(models.EntryLog.id == entry_id).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+
+    if image and image.filename:
+        if db_entry.image_path and os.path.exists(db_entry.image_path):
+            os.remove(db_entry.image_path)
+            
+        ext = image.filename.split(".")[-1]
+        filename = f"{uuid.uuid4()}.{ext}"
+        image_path = f"uploads/{filename}"
+        with open(image_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        db_entry.image_path = image_path
+
+    db_entry.material_name = material_name
+    db_entry.task_type = task_type
+    db_entry.speed = speed
+    db_entry.power = power
+    db_entry.frequency_passes = frequency_passes
+    db_entry.rating = rating
+    db_entry.notes = notes
+
+    db.commit()
+    db.refresh(db_entry)
+    return db_entry
+
+@app.post("/api/entries/{entry_id}/comments", response_model=schemas.Comment)
+def create_comment(entry_id: int, comment: schemas.CommentCreate, db: Session = Depends(get_db)):
+    db_entry = db.query(models.EntryLog).filter(models.EntryLog.id == entry_id).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    
+    db_comment = models.Comment(entry_id=entry_id, text=comment.text)
+    db.add(db_comment)
+    db.commit()
+    db.refresh(db_comment)
+    return db_comment
+
 @app.delete("/api/entries/{entry_id}")
 def delete_entry(entry_id: int, db: Session = Depends(get_db)):
     db_entry = db.query(models.EntryLog).filter(models.EntryLog.id == entry_id).first()
