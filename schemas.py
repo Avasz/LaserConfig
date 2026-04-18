@@ -26,6 +26,7 @@ class EntryLogBase(BaseModel):
     rating: int
     notes: Optional[str] = None
     image_path: Optional[str] = None
+    tab_power: Optional[float] = None
 
 class EntryLogCreate(EntryLogBase):
     pass

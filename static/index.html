@@ -122,7 +122,7 @@
                             </div>
                         </div>
                         
-                        <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-3 grid grid-cols-3 gap-2 mb-4 text-center border-t border-b border-gray-100 dark:border-gray-800">
+                        <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-3 grid grid-cols-4 gap-2 mb-4 text-center border-t border-b border-gray-100 dark:border-gray-800">
                             <div>
                                 <p class="text-[10px] text-gray-500 uppercase tracking-widest">Speed</p>
                                 <p class="font-semibold text-sm" x-text="entry.speed + ' mm/m'"></p>
@@ -130,6 +130,10 @@
                             <div>
                                 <p class="text-[10px] text-gray-500 uppercase tracking-widest">Power</p>
                                 <p class="font-semibold text-sm" x-text="entry.power + '%'"></p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tabs</p>
+                                <p class="font-semibold text-sm" x-text="entry.tab_power ? entry.tab_power + '%' : '-'"></p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-gray-500 uppercase tracking-widest">Passes</p>
@@ -178,7 +182,10 @@
                             <td class="p-4 text-sm text-gray-600 dark:text-gray-300">
                                 S: <span x-text="entry.speed" class="font-semibold text-gray-800 dark:text-gray-100"></span> 
                                 P: <span x-text="entry.power + '%'" class="font-semibold text-gray-800 dark:text-gray-100"></span>
-                                pass: <span x-text="entry.frequency_passes" class="font-semibold text-gray-800 dark:text-gray-100"></span>
+                                pass: <span x-text="entry.frequency_passes" class="font-semibold text-gray-800 dark:text-gray-100 mr-2"></span>
+                                <template x-if="entry.tab_power">
+                                    <span>tab: <span x-text="entry.tab_power + '%'" class="font-semibold text-gray-800 dark:text-gray-100"></span></span>
+                                </template>
                             </td>
                             <td class="p-4 text-yellow-400 flex items-center h-full">
                                 <i class="ri-star-fill"></i> <span x-text="entry.rating" class="text-gray-600 dark:text-gray-400 text-sm ml-1 font-semibold"></span>
@@ -243,7 +250,7 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-2 md:gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Speed</label>
                             <input type="number" step="0.1" x-model="formData.speed" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
@@ -251,6 +258,10 @@
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Power (%)</label>
                             <input type="number" step="0.1" max="100" x-model="formData.power" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+                        <div x-show="formData.task_type === 'Cutting'">
+                            <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Tab (%)</label>
+                            <input type="number" step="0.1" max="100" x-model="formData.tab_power" placeholder="None" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
                         </div>
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Passes</label>
@@ -319,7 +330,7 @@
                         <img :src="'/' + activeEntry?.image_path" class="w-full h-48 md:h-64 object-cover rounded-xl mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
                     </template>
 
-                    <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-3 grid grid-cols-3 gap-2 mb-4 text-center border border-gray-100 dark:border-gray-800">
+                    <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-3 grid grid-cols-4 gap-2 mb-4 text-center border border-gray-100 dark:border-gray-800">
                         <div>
                             <p class="text-[10px] text-gray-500 uppercase tracking-widest">Speed</p>
                             <p class="font-bold text-base dark:text-white" x-text="activeEntry?.speed"></p>
@@ -327,6 +338,10 @@
                         <div>
                             <p class="text-[10px] text-gray-500 uppercase tracking-widest">Power</p>
                             <p class="font-bold text-base dark:text-white" x-text="activeEntry?.power + '%'"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tabs</p>
+                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.tab_power ? activeEntry?.tab_power + '%' : '-'"></p>
                         </div>
                         <div>
                             <p class="text-[10px] text-gray-500 uppercase tracking-widest">Passes</p>
@@ -395,6 +410,7 @@
                     power: 50,
                     frequency_passes: '1',
                     rating: 3,
+                    tab_power: '',
                     notes: ''
                 },
 
@@ -458,6 +474,7 @@
                         power: entry.power,
                         frequency_passes: entry.frequency_passes,
                         rating: entry.rating,
+                        tab_power: entry.tab_power || '',
                         notes: entry.notes
                     };
                     this.selectedFile = null;
@@ -475,6 +492,7 @@
                         power: entry.power,
                         frequency_passes: entry.frequency_passes,
                         rating: entry.rating,
+                        tab_power: entry.tab_power || '',
                         notes: entry.notes
                     };
                     this.selectedFile = null;
@@ -506,6 +524,7 @@
                         power: 50,
                         frequency_passes: '1',
                         rating: 3,
+                        tab_power: '',
                         notes: ''
                     };
                     this.selectedFile = null;
@@ -519,6 +538,7 @@
                     this.loading = true;
                     const fd = new FormData();
                     Object.keys(this.formData).forEach(key => {
+                        if (key === 'tab_power' && this.formData[key] === '') return;
                         fd.append(key, this.formData[key]);
                     });
                     if (this.selectedFile) {

@@ -15,6 +15,7 @@ class EntryLog(Base):
     rating = Column(Integer, nullable=False)
     notes = Column(Text, nullable=True)
     image_path = Column(String, nullable=True)
+    tab_power = Column(Float, nullable=True)
     comments = relationship("Comment", back_populates="entry", cascade="all, delete-orphan")
 
 class Comment(Base):

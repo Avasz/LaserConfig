@@ -26,6 +26,7 @@ async def create_entry(
     power: float = Form(...),
     frequency_passes: str = Form(...),
     rating: int = Form(...),
+    tab_power: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
@@ -45,6 +46,7 @@ async def create_entry(
         power=power,
         frequency_passes=frequency_passes,
         rating=rating,
+        tab_power=tab_power,
         notes=notes,
         image_path=image_path
     )
@@ -88,6 +90,7 @@ async def update_entry(
     power: float = Form(...),
     frequency_passes: str = Form(...),
     rating: int = Form(...),
+    tab_power: Optional[float] = Form(None),
     notes: Optional[str] = Form(None),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
@@ -113,6 +116,7 @@ async def update_entry(
     db_entry.power = power
     db_entry.frequency_passes = frequency_passes
     db_entry.rating = rating
+    db_entry.tab_power = tab_power
     db_entry.notes = notes
 
     db.commit()
