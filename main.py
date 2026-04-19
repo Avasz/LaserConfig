@@ -18,16 +18,49 @@ app = FastAPI(title="Laser Settings Vault")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
+@app.get("/api/materials", response_model=List[schemas.Material])
+def get_materials(db: Session = Depends(get_db)):
+    return db.query(models.Material).all()
+
+@app.post("/api/materials", response_model=schemas.Material)
+def create_material(material: schemas.MaterialCreate, db: Session = Depends(get_db)):
+    db_material = models.Material(**material.dict())
+    db.add(db_material)
+    db.commit()
+    db.refresh(db_material)
+    return db_material
+
+@app.put("/api/materials/{material_id}", response_model=schemas.Material)
+def update_material(material_id: int, material: schemas.MaterialCreate, db: Session = Depends(get_db)):
+    db_material = db.query(models.Material).filter(models.Material.id == material_id).first()
+    if not db_material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    for k, v in material.dict().items():
+        setattr(db_material, k, v)
+    db.commit()
+    db.refresh(db_material)
+    return db_material
+
+@app.delete("/api/materials/{material_id}")
+def delete_material(material_id: int, db: Session = Depends(get_db)):
+    db_material = db.query(models.Material).filter(models.Material.id == material_id).first()
+    if not db_material:
+        raise HTTPException(status_code=404, detail="Material not found")
+    db.delete(db_material)
+    db.commit()
+    return {"ok": True}
+
 @app.post("/api/entries", response_model=schemas.EntryLog)
 async def create_entry(
-    material_name: str = Form(...),
+    material_id: int = Form(...),
     task_type: str = Form(...),
     speed: float = Form(...),
     power: float = Form(...),
     frequency_passes: str = Form(...),
     rating: int = Form(...),
-    tab_power: Optional[float] = Form(None),
+    holding_tabs: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    is_pinned: bool = Form(False),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -40,14 +73,15 @@ async def create_entry(
             shutil.copyfileobj(image.file, buffer)
 
     db_entry = models.EntryLog(
-        material_name=material_name,
+        material_id=material_id,
         task_type=task_type,
         speed=speed,
         power=power,
         frequency_passes=frequency_passes,
         rating=rating,
-        tab_power=tab_power,
+        holding_tabs=holding_tabs,
         notes=notes,
+        is_pinned=is_pinned,
         image_path=image_path
     )
     db.add(db_entry)
@@ -63,9 +97,14 @@ def read_entries(
     rating: Optional[int] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.EntryLog)
+    from sqlalchemy.orm import joinedload
+    query = db.query(models.EntryLog).options(joinedload(models.EntryLog.material))
+    
     if search:
-        query = query.filter(models.EntryLog.material_name.ilike(f"%{search}%"))
+        query = query.join(models.Material).filter(
+            models.Material.base_type.ilike(f"%{search}%") | 
+            models.Material.name_brand.ilike(f"%{search}%")
+        )
     if task_type:
         query = query.filter(models.EntryLog.task_type == task_type)
     if rating:
@@ -84,14 +123,15 @@ def read_entry(entry_id: int, db: Session = Depends(get_db)):
 @app.put("/api/entries/{entry_id}", response_model=schemas.EntryLog)
 async def update_entry(
     entry_id: int,
-    material_name: str = Form(...),
+    material_id: int = Form(...),
     task_type: str = Form(...),
     speed: float = Form(...),
     power: float = Form(...),
     frequency_passes: str = Form(...),
     rating: int = Form(...),
-    tab_power: Optional[float] = Form(None),
+    holding_tabs: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    is_pinned: bool = Form(False),
     image: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -110,15 +150,26 @@ async def update_entry(
             shutil.copyfileobj(image.file, buffer)
         db_entry.image_path = image_path
 
-    db_entry.material_name = material_name
+    db_entry.material_id = material_id
     db_entry.task_type = task_type
     db_entry.speed = speed
     db_entry.power = power
     db_entry.frequency_passes = frequency_passes
     db_entry.rating = rating
-    db_entry.tab_power = tab_power
+    db_entry.holding_tabs = holding_tabs
     db_entry.notes = notes
+    db_entry.is_pinned = is_pinned
 
+    db.commit()
+    db.refresh(db_entry)
+    return db_entry
+
+@app.put("/api/entries/{entry_id}/pin", response_model=schemas.EntryLog)
+def toggle_pin(entry_id: int, db: Session = Depends(get_db)):
+    db_entry = db.query(models.EntryLog).filter(models.EntryLog.id == entry_id).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Entry not found")
+    db_entry.is_pinned = not db_entry.is_pinned
     db.commit()
     db.refresh(db_entry)
     return db_entry

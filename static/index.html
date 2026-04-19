@@ -5,33 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laser Settings Vault</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Inter', 'monospace'],
                     },
                     colors: {
                         brand: {
-                            50: '#fdf8f6',
-                            100: '#f2e8e5',
-                            200: '#eaddd7',
-                            300: '#e0cec7',
-                            400: '#d2bab0',
-                            500: '#c5a799',
-                            600: '#af8878',
-                            700: '#8e6c5d',
-                            800: '#6d5349',
-                            900: '#523e38',
+                            50: '#f0f5ff',
+                            100: '#e5edff',
+                            200: '#cddbfe',
+                            300: '#a4bdfa',
+                            400: '#7694f2',
+                            500: '#526deb',
+                            600: '#3d4ed7',
+                            700: '#323eb7',
+                            800: '#2d3594',
+                            900: '#283176',
                         },
                         darkslate: {
-                            800: '#27272a',
-                            900: '#18181b',
+                            800: '#1f2028',
+                            900: '#13141c',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' },
                         }
                     }
                 }
@@ -41,346 +51,569 @@
     <style>
         [x-cloak] { display: none !important; }
         .glass-panel {
-            background: rgba(39, 39, 42, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(31, 32, 40, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .light .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        body {
+            background-color: #f8fafc;
+        }
+        html.dark body {
+            background-color: #0b0c10;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(61, 78, 215, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(82, 109, 235, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-darkslate-900 text-gray-900 dark:text-gray-100 font-sans min-h-screen pb-20 md:pb-0 transition-colors duration-300">
+<body class="text-gray-900 dark:text-gray-100 min-h-screen pb-20 md:pb-0 transition-colors duration-500">
 
-    <div x-data="app()" x-init="initData()" class="max-w-5xl mx-auto px-4 py-8">
+    <div x-data="app()" x-init="initData()" class="max-w-[1200px] mx-auto px-4 py-8 relative">
         
         <!-- Header -->
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
-                    <i class="ri-flashlight-fill text-brand-500"></i> Laser Vault
-                </h1>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Workshop settings & material logs</p>
+        <header class="flex justify-between items-center mb-10">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 animate-float">
+                    <i class="ri-flashlight-fill text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight">
+                        Laser Vault
+                    </h1>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Advanced settings & parameters</p>
+                </div>
             </div>
-            <button @click="toggleTheme()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition">
-                <i :class="isDark ? 'ri-sun-line' : 'ri-moon-line'" class="text-xl"></i>
-            </button>
+            <div class="flex gap-3">
+                <button @click="currentRoute = (currentRoute === 'dashboard' ? 'materials' : 'dashboard')" class="px-4 py-2 rounded-xl text-sm font-semibold transition bg-gray-200/50 hover:bg-gray-200 dark:bg-darkslate-800 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200">
+                    <i class="ri-settings-4-line mr-1"></i> 
+                    <span x-text="currentRoute === 'dashboard' ? 'Control Panel' : 'Back to Vault'"></span>
+                </button>
+                <button @click="toggleTheme()" class="p-2 w-10 h-10 flex items-center justify-center rounded-xl bg-gray-200/50 hover:bg-gray-200 dark:bg-darkslate-800 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 transition">
+                    <i :class="isDark ? 'ri-sun-fill text-yellow-400' : 'ri-moon-fill text-brand-600'" class="text-lg"></i>
+                </button>
+            </div>
         </header>
 
-        <!-- Search & Filter Bar -->
-        <div class="glass-panel p-4 rounded-2xl mb-6 flex flex-col md:flex-row gap-4 shadow-sm items-center">
-            <div class="relative w-full flex-grow">
-                <i class="ri-search-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                <input type="text" x-model="search" @input.debounce="fetchEntries()" placeholder="Search material..." class="w-full bg-white dark:bg-darkslate-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none transition">
-            </div>
-            <div class="grid grid-cols-2 gap-2 w-full md:flex md:w-auto">
-                <select x-model="filterType" @change="fetchEntries()" class="bg-white dark:bg-darkslate-800 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none w-full min-w-0 text-sm md:text-base truncate">
-                    <option value="">All Tasks</option>
-                    <option value="Cutting">Cutting</option>
-                    <option value="Engraving">Engraving</option>
-                </select>
-                <select x-model="filterRating" @change="fetchEntries()" class="bg-white dark:bg-darkslate-800 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-4 py-2 focus:ring-2 focus:ring-brand-500 outline-none w-full min-w-0 text-sm md:text-base truncate">
-                    <option value="">All Ratings</option>
-                    <option value="5">5 Stars</option>
-                    <option value="4">4 Stars</option>
-                    <option value="3">3 Stars</option>
-                    <option value="2">2 Stars</option>
-                    <option value="1">1 Star</option>
-                </select>
-            </div>
-        </div>
+        <!-- DASHBOARD ROUTE -->
+        <div x-show="currentRoute === 'dashboard'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <!-- Navigation Tabs & Toolbar -->
+            <div class="glass-panel p-2 rounded-2xl mb-8 flex flex-col md:flex-row gap-4 shadow-sm items-center justify-between">
+                <!-- Task Type Tabs -->
+                <div class="flex p-1 bg-gray-200/50 dark:bg-black/40 rounded-xl w-full md:w-auto overflow-hidden">
+                    <button @click="taskTypeTab = 'All'; fetchEntries()" :class="taskTypeTab === 'All' ? 'bg-white dark:bg-darkslate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'" class="flex-1 md:w-32 py-2 px-4 rounded-lg text-sm font-bold transition">
+                        <i class="ri-function-line mr-1"></i> All
+                    </button>
+                    <button @click="taskTypeTab = 'Cutting'; fetchEntries()" :class="taskTypeTab === 'Cutting' ? 'bg-white dark:bg-darkslate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'" class="flex-1 md:w-32 py-2 px-4 rounded-lg text-sm font-bold transition">
+                        <i class="ri-scissors-cut-fill text-red-500 mr-1"></i> Cutting
+                    </button>
+                    <button @click="taskTypeTab = 'Engraving'; fetchEntries()" :class="taskTypeTab === 'Engraving' ? 'bg-white dark:bg-darkslate-800 text-brand-600 dark:text-brand-400 shadow-sm' : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'" class="flex-1 md:w-32 py-2 px-4 rounded-lg text-sm font-bold transition">
+                        <i class="ri-fire-fill text-orange-500 mr-1"></i> Engraving
+                    </button>
+                </div>
 
-        <!-- View Controls -->
-        <div class="flex justify-end mb-4 gap-2">
-            <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-brand-500 text-white shadow-sm' : 'bg-white dark:bg-darkslate-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'" class="p-2 rounded-lg transition"><i class="ri-grid-fill"></i></button>
-            <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-brand-500 text-white shadow-sm' : 'bg-white dark:bg-darkslate-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'" class="p-2 rounded-lg transition"><i class="ri-list-check"></i></button>
-        </div>
-
-        <!-- Entries Grid -->
-        <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <template x-for="entry in entries" :key="entry.id">
-                <div @click="openViewModal(entry)" class="cursor-pointer bg-white dark:bg-darkslate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-800 group relative">
-                    <!-- Image -->
-                    <div class="h-48 bg-gray-200 dark:bg-gray-700 relative">
-                        <template x-if="entry.image_path">
-                            <img :src="'/' + entry.image_path" class="w-full h-full object-cover">
-                        </template>
-                        <template x-if="!entry.image_path">
-                            <div class="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500">
-                                <i class="ri-image-2-line text-4xl"></i>
-                            </div>
-                        </template>
-                        <div class="absolute top-2 right-2 flex gap-1">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-md bg-white/90 dark:bg-darkslate-900/90 text-brand-600 dark:text-brand-400 backdrop-blur-sm" x-text="entry.task_type"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold dark:text-gray-100" x-text="entry.material_name"></h3>
-                            <div class="flex text-yellow-400 text-sm">
-                                <template x-for="i in 5">
-                                    <i :class="i <= entry.rating ? 'ri-star-fill' : 'ri-star-line'"></i>
-                                </template>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gray-50 dark:bg-slate-900 rounded-lg p-3 grid grid-cols-4 gap-2 mb-4 text-center border-t border-b border-gray-100 dark:border-gray-800">
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Speed</p>
-                                <p class="font-semibold text-sm" x-text="entry.speed + ' mm/m'"></p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Power</p>
-                                <p class="font-semibold text-sm" x-text="entry.power + '%'"></p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tabs</p>
-                                <p class="font-semibold text-sm" x-text="entry.tab_power ? entry.tab_power + '%' : '-'"></p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Passes</p>
-                                <p class="font-semibold text-sm" x-text="entry.frequency_passes"></p>
-                            </div>
-                        </div>
-
-                        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 italic" x-text="entry.notes || 'No notes left.'"></p>
-                    </div>
-
-                    <!-- Actions overlay on hover -->
-                    <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex justify-end gap-2 isolate">
-                        <button @click.stop="openEditModal(entry)" class="p-2 rounded-lg bg-white/20 hover:bg-white/40 text-white backdrop-blur-md" title="Edit Settings">
-                            <i class="ri-edit-line"></i>
-                        </button>
-                        <button @click.stop="openCloneModal(entry)" class="p-2 rounded-lg bg-white/20 hover:bg-white/40 text-white backdrop-blur-md" title="Clone Settings">
-                            <i class="ri-file-copy-line"></i>
-                        </button>
-                        <button @click.stop="deleteEntry(entry.id)" class="p-2 rounded-lg bg-red-500/80 hover:bg-red-600 text-white backdrop-blur-md" title="Delete">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
+                <!-- Search & Filters -->
+                <div class="flex gap-3 w-full md:w-auto">
+                    <div class="relative flex-grow md:w-64">
+                        <i class="ri-search-2-line absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" x-model="search" @input.debounce="fetchEntries()" placeholder="Search..." class="w-full bg-white/50 dark:bg-darkslate-900 border border-gray-200/50 dark:border-gray-700/50 rounded-xl pl-10 pr-4 py-2 font-medium focus:ring-2 focus:ring-brand-500 outline-none transition placeholder-gray-400">
                     </div>
                 </div>
-            </template>
-        </div>
 
-        <!-- Entries Table -->
-        <div x-cloak x-show="viewMode === 'table'" class="overflow-x-auto bg-white dark:bg-darkslate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
-            <table class="w-full text-left border-collapse min-w-[600px]">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-darkslate-900 border-b border-gray-200 dark:border-gray-700 text-sm uppercase text-gray-500 tracking-wider">
-                        <th class="p-4 font-semibold">Material</th>
-                        <th class="p-4 font-semibold">Type</th>
-                        <th class="p-4 font-semibold">Settings</th>
-                        <th class="p-4 font-semibold">Rating</th>
-                        <th class="p-4 font-semibold text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="entry in entries" :key="entry.id">
-                        <tr class="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition cursor-pointer" @click="openViewModal(entry)">
-                            <td class="p-4 font-bold" x-text="entry.material_name"></td>
-                            <td class="p-4">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-md bg-gray-100 dark:bg-darkslate-900 text-brand-600 dark:text-brand-400" x-text="entry.task_type"></span>
-                            </td>
-                            <td class="p-4 text-sm text-gray-600 dark:text-gray-300">
-                                S: <span x-text="entry.speed" class="font-semibold text-gray-800 dark:text-gray-100"></span> 
-                                P: <span x-text="entry.power + '%'" class="font-semibold text-gray-800 dark:text-gray-100"></span>
-                                pass: <span x-text="entry.frequency_passes" class="font-semibold text-gray-800 dark:text-gray-100 mr-2"></span>
-                                <template x-if="entry.tab_power">
-                                    <span>tab: <span x-text="entry.tab_power + '%'" class="font-semibold text-gray-800 dark:text-gray-100"></span></span>
+                <!-- View Modes -->
+                <div class="flex gap-1 bg-gray-200/50 dark:bg-black/40 p-1 rounded-xl">
+                    <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-white dark:bg-darkslate-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="p-2 rounded-lg transition" title="Grid"><i class="ri-grid-fill"></i></button>
+                    <button @click="viewMode = 'table'" :class="viewMode === 'table' ? 'bg-white dark:bg-darkslate-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="p-2 rounded-lg transition" title="Table"><i class="ri-list-check"></i></button>
+                    <button @click="viewMode = 'grouped'" :class="viewMode === 'grouped' ? 'bg-white dark:bg-darkslate-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'" class="p-2 rounded-lg transition" title="Grouped by Material"><i class="ri-folder-reduce-fill"></i></button>
+                </div>
+            </div>
+
+            <!-- Entries Content -->
+            <div>
+                <!-- Grid View -->
+                <div x-show="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <template x-for="entry in sortedEntries" :key="entry.id">
+                        <div @click="openViewModal(entry)" class="cursor-pointer bg-white dark:bg-darkslate-800 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:-translate-y-1 transition duration-300 border border-gray-100 dark:border-gray-800 group flex flex-col h-full">
+                            
+                            <!-- Image / Header -->
+                            <div class="h-40 bg-gray-100 dark:bg-gray-800 relative overflow-hidden">
+                                <template x-if="entry.image_path">
+                                    <img :src="'/' + entry.image_path" class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
                                 </template>
-                            </td>
-                            <td class="p-4 text-yellow-400 flex items-center h-full">
-                                <i class="ri-star-fill"></i> <span x-text="entry.rating" class="text-gray-600 dark:text-gray-400 text-sm ml-1 font-semibold"></span>
-                            </td>
-                            <td class="p-4 text-right">
-                                <div class="flex justify-end gap-2 isolate">
-                                    <button @click.stop="openEditModal(entry)" class="p-2 rounded-lg bg-gray-100 dark:bg-darkslate-700 hover:bg-gray-200 dark:hover:bg-darkslate-600 text-gray-600 dark:text-gray-300 transition" title="Edit"><i class="ri-edit-line"></i></button>
-                                    <button @click.stop="openCloneModal(entry)" class="p-2 rounded-lg bg-gray-100 dark:bg-darkslate-700 hover:bg-gray-200 dark:hover:bg-darkslate-600 text-gray-600 dark:text-gray-300 transition" title="Clone"><i class="ri-file-copy-line"></i></button>
+                                <template x-if="!entry.image_path">
+                                    <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 bg-gradient-to-tr from-gray-100 to-gray-200 dark:from-darkslate-800 dark:to-[#1a1b23]">
+                                        <i class="ri-rfid-line text-5xl mb-2 opacity-50"></i>
+                                    </div>
+                                </template>
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                
+                                <div class="absolute top-3 left-3 flex gap-2">
+                                    <div class="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20">
+                                        <i :class="entry.task_type === 'Cutting' ? 'ri-scissors-cut-fill text-white text-xs' : 'ri-fire-fill text-orange-400 text-sm'"></i>
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
+
+                                <button @click.stop="togglePin(entry.id)" class="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md border border-white/30 transition text-white">
+                                    <i :class="entry.is_pinned ? 'ri-pushpin-2-fill text-brand-400 rotate-45' : 'ri-pushpin-2-line'"></i>
+                                </button>
+                                
+                                <div class="absolute bottom-3 left-3 right-3 flex justify-between items-end">
+                                    <h3 class="text-white font-bold leading-tight drop-shadow-md pr-2" x-text="getMaterialName(entry.material)"></h3>
+                                    <div class="flex bg-black/50 backdrop-blur-md px-2 py-1 rounded-lg text-yellow-400 text-xs shrink-0">
+                                        <i class="ri-star-fill text-[10px] mr-1"></i> <span x-text="entry.rating" class="font-bold text-white"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="p-4 flex-grow flex flex-col">
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div class="bg-gray-50 dark:bg-black/30 p-2 rounded-xl flex items-center gap-3 border border-gray-100 dark:border-white/5">
+                                        <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                            <i class="ri-dashboard-3-line"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Speed</p>
+                                            <p class="font-bold text-gray-900 dark:text-white leading-none" x-text="entry.speed"></p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-black/30 p-2 rounded-xl flex items-center gap-3 border border-gray-100 dark:border-white/5">
+                                        <div class="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                                            <i class="ri-flashlight-line"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Power</p>
+                                            <p class="font-bold text-gray-900 dark:text-white leading-none" x-text="entry.power + '%'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-2 text-xs font-medium mt-auto border-t border-gray-100 dark:border-gray-800 pt-3">
+                                    <span class="bg-gray-100 dark:bg-darkslate-900 px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                                        <i class="ri-restart-line"></i> <span x-text="entry.frequency_passes + ' pass'"></span>
+                                    </span>
+                                    <template x-if="entry.task_type === 'Cutting' && entry.holding_tabs">
+                                        <span class="bg-gray-100 dark:bg-darkslate-900 px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-400 flex items-center gap-1 truncate max-w-[120px]" :title="entry.holding_tabs">
+                                            <i class="ri-link"></i> <span x-text="entry.holding_tabs" class="truncate"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </template>
-                </tbody>
-            </table>
-            <template x-if="entries.length === 0">
-                <div class="w-full py-12 text-center text-gray-500">
-                    <i class="ri-inbox-line text-5xl mb-2"></i>
-                    <p>No entries found. Try adjusting filters.</p>
                 </div>
-            </template>
+
+                <!-- Table View -->
+                <div x-show="viewMode === 'table'" class="overflow-hidden bg-white dark:bg-darkslate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[800px]">
+                            <thead>
+                                <tr class="bg-gray-50 dark:bg-darkslate-900/50 border-b border-gray-200 dark:border-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                    <th class="p-4 pl-6 w-10"></th>
+                                    <th class="p-4">Material Details</th>
+                                    <th class="p-4">Task</th>
+                                    <th class="p-4">Parameters</th>
+                                    <th class="p-4">Notes</th>
+                                    <th class="p-4 text-right pr-6">Rating</th>
+                                </tr>
+                            </thead>
+                            <tbody class="font-medium text-sm">
+                                <template x-for="entry in sortedEntries" :key="entry.id">
+                                    <tr class="border-b border-gray-100 dark:border-white/5 hover:bg-brand-50/50 dark:hover:bg-brand-900/10 transition cursor-pointer" @click="openViewModal(entry)">
+                                        <td class="p-4 pl-6" @click.stop="togglePin(entry.id)">
+                                            <i :class="entry.is_pinned ? 'ri-pushpin-2-fill text-brand-500 text-lg rotate-45' : 'ri-pushpin-2-line text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg'"></i>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkslate-900 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-gray-700">
+                                                    <template x-if="entry.image_path">
+                                                        <img :src="'/' + entry.image_path" class="w-full h-full object-cover">
+                                                    </template>
+                                                    <template x-if="!entry.image_path">
+                                                        <div class="w-full h-full flex items-center justify-center text-gray-400"><i class="ri-image-2-line"></i></div>
+                                                    </template>
+                                                </div>
+                                                <span class="font-bold text-gray-900 dark:text-white text-base" x-text="getMaterialName(entry.material)"></span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold" :class="entry.task_type === 'Cutting' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'">
+                                                <i :class="entry.task_type === 'Cutting' ? 'ri-scissors-cut-line' : 'ri-fire-line'"></i> <span x-text="entry.task_type"></span>
+                                            </span>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex gap-4 font-mono text-xs">
+                                                <span title="Speed"><i class="ri-dashboard-3-line text-gray-400 mr-1"></i> <span x-text="entry.speed" class="text-gray-900 dark:text-gray-200 font-bold"></span></span>
+                                                <span title="Power"><i class="ri-flashlight-line text-gray-400 mr-1"></i> <span x-text="entry.power + '%'" class="text-gray-900 dark:text-gray-200 font-bold"></span></span>
+                                                <span title="Passes"><i class="ri-restart-line text-gray-400 mr-1"></i> <span x-text="entry.frequency_passes" class="text-gray-900 dark:text-gray-200 font-bold"></span></span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">
+                                            <p class="text-gray-500 dark:text-gray-400 text-xs line-clamp-1 max-w-[200px]" x-text="entry.notes || '—'"></p>
+                                        </td>
+                                        <td class="p-4 text-right pr-6">
+                                            <div class="flex justify-end text-yellow-400">
+                                                <template x-for="i in 5">
+                                                    <i :class="i <= entry.rating ? 'ri-star-fill' : 'ri-star-line text-gray-300 dark:text-gray-700'"></i>
+                                                </template>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grouped View -->
+                <div x-show="viewMode === 'grouped'" class="space-y-8">
+                    <template x-for="group in groupedEntries" :key="group.material.id">
+                        <div class="bg-white dark:bg-darkslate-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                            <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                                <div class="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400">
+                                    <i class="ri-stack-line text-2xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold dark:text-white" x-text="getMaterialName(group.material)"></h2>
+                                <span class="ml-auto bg-gray-100 dark:bg-darkslate-900 px-3 py-1 rounded-xl text-sm font-bold text-gray-500" x-text="group.entries.length + ' logs'"></span>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <template x-for="entry in group.entries" :key="entry.id">
+                                    <div @click="openViewModal(entry)" class="cursor-pointer border border-gray-200 dark:border-gray-700 rounded-2xl p-4 hover:border-brand-500 dark:hover:border-brand-500 transition group flex gap-4 items-center bg-gray-50/50 dark:bg-darkslate-900/50">
+                                        <div class="w-16 h-16 rounded-xl bg-gray-200 dark:bg-gray-800 overflow-hidden shrink-0">
+                                            <template x-if="entry.image_path">
+                                                <img :src="'/' + entry.image_path" class="w-full h-full object-cover mix-blend-multiply dark:mix-blend-normal">
+                                            </template>
+                                        </div>
+                                        <div class="flex-grow">
+                                            <div class="flex justify-between items-start mb-1">
+                                                <span class="text-xs font-bold px-2 py-0.5 rounded text-white" :class="entry.task_type === 'Cutting' ? 'bg-red-500' : 'bg-orange-500'" x-text="entry.task_type"></span>
+                                                <i x-show="entry.is_pinned" class="ri-pushpin-2-fill text-brand-500 text-sm rotate-45"></i>
+                                            </div>
+                                            <div class="flex gap-3 text-sm font-mono font-bold dark:text-gray-200 mt-2">
+                                                <span>S:<span x-text="entry.speed" class="text-brand-600 dark:text-brand-400"></span></span>
+                                                <span>P:<span x-text="entry.power" class="text-brand-600 dark:text-brand-400"></span></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="sortedEntries.length === 0" class="text-center py-20">
+                    <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-darkslate-800 rounded-full flex items-center justify-center text-4xl text-gray-300 dark:text-gray-600">
+                        <i class="ri-ghost-smile-line"></i>
+                    </div>
+                    <h3 class="text-xl font-bold dark:text-white mb-2">Nothing logged yet</h3>
+                    <p class="text-gray-500 dark:text-gray-400">Add a material config to get started.</p>
+                </div>
+            </div>
+
+            <!-- FAB Quick Add -->
+            <button @click="openModal()" class="fixed bottom-8 right-8 bg-brand-600 hover:bg-brand-500 text-white rounded-2xl w-16 h-16 flex items-center justify-center shadow-xl shadow-brand-500/40 hover:shadow-brand-500/60 hover:-translate-y-1 transition-all z-40">
+                <i class="ri-add-line text-3xl"></i>
+            </button>
         </div>
 
-        <template x-if="entries.length === 0 && viewMode === 'grid'">
-            <div class="w-full py-12 text-center text-gray-500">
-                <i class="ri-inbox-line text-5xl mb-2"></i>
-                <p>No entries found. Try adjusting filters.</p>
+        <!-- MATERIALS MANAGEMENT ROUTE -->
+        <div x-cloak x-show="currentRoute === 'materials'" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="glass-panel rounded-3xl p-6 md:p-10 shadow-lg border border-gray-100 dark:border-white/5">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-2xl font-bold dark:text-white">Material Library</h2>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage physical materials to use in parameter logs.</p>
+                    </div>
+                    <button @click="openMaterialModal()" class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2.5 rounded-xl font-bold text-sm hover:scale-105 transition shadow-md">
+                        <i class="ri-add-line mr-1"></i> Add Material
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 uppercase tracking-widest">
+                                <th class="pb-3 font-semibold">Material Full Name</th>
+                                <th class="pb-3 font-semibold">Base Type</th>
+                                <th class="pb-3 font-semibold">Brand/Grade</th>
+                                <th class="pb-3 font-semibold">Thickness (mm)</th>
+                                <th class="pb-3 text-right font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm font-medium">
+                            <template x-for="mat in materials" :key="mat.id">
+                                <tr class="border-b border-gray-100 dark:border-gray-800/50 hover:bg-gray-50/50 dark:hover:bg-white/5 transition">
+                                    <td class="py-4 text-brand-600 dark:text-brand-400 font-bold text-base" x-text="getMaterialName(mat)"></td>
+                                    <td class="py-4 text-gray-800 dark:text-gray-200" x-text="mat.base_type"></td>
+                                    <td class="py-4 text-gray-600 dark:text-gray-400">
+                                        <span x-show="mat.name_brand" x-text="mat.name_brand"></span>
+                                        <span x-show="mat.name_brand && mat.grade" class="mx-1">•</span>
+                                        <span x-show="mat.grade" x-text="'Grade: '+mat.grade"></span>
+                                        <span x-show="!mat.name_brand && !mat.grade">—</span>
+                                    </td>
+                                    <td class="py-4 text-gray-800 dark:text-gray-200">
+                                        <span x-text="mat.thickness_mm ? mat.thickness_mm + 'mm' : '—'" class="bg-gray-100 dark:bg-darkslate-900 px-2 py-1 rounded-md text-xs font-bold font-mono"></span>
+                                    </td>
+                                    <td class="py-4 text-right">
+                                        <button @click="openMaterialModal(mat)" class="text-gray-400 hover:text-brand-500 transition p-2"><i class="ri-edit-line text-lg"></i></button>
+                                        <button @click="deleteMaterial(mat.id)" class="text-gray-400 hover:text-red-500 transition p-2"><i class="ri-delete-bin-line text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </template>
+        </div>
 
-        <!-- FAB for Quick Add -->
-        <button @click="openModal()" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 bg-brand-600 hover:bg-brand-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:shadow-brand-500/50 transition-all transform hover:scale-105 z-40">
-            <i class="ri-add-line text-2xl"></i>
-        </button>
-
-        <!-- Main Form Modal (Add / Edit / Clone) -->
-        <div x-cloak x-show="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/60 backdrop-blur-sm p-4">
-            <div @click.away="closeModal()" class="bg-white dark:bg-darkslate-800 rounded-2xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform transition-all p-4 md:p-6">
-                <div class="flex justify-between items-center mb-4 md:mb-6">
-                    <h2 class="text-xl md:text-2xl font-bold dark:text-white" x-text="isEditing ? 'Edit Settings' : (isCloning ? 'Clone Settings' : 'New Entry')"></h2>
-                    <button @click="closeModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                        <i class="ri-close-line text-xl md:text-2xl"></i>
+        <!-- NEW/EDIT ENTRY MODAL -->
+        <div x-cloak x-show="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 sm:py-12">
+            <div x-show="isModalOpen" @click="closeModal()" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            
+            <div x-show="isModalOpen" x-transition.scale.origin.bottom class="bg-white dark:bg-darkslate-800 rounded-3xl w-full max-w-2xl shadow-2xl relative flex flex-col max-h-full border border-gray-100 dark:border-white/10 z-10 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-darkslate-900/50">
+                    <h2 class="text-xl font-bold dark:text-white flex items-center gap-2">
+                        <i class="ri-equalizer-fill text-brand-500"></i>
+                        <span x-text="isEditing ? 'Edit Config' : (isCloning ? 'Clone Config' : 'Log New Config')"></span>
+                    </h2>
+                    <button type="button" @click="closeModal()" class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                        <i class="ri-close-line"></i>
                     </button>
                 </div>
                 
-                <form @submit.prevent="submitEntry()" class="space-y-3 md:space-y-4">
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material Name</label>
-                        <input type="text" x-model="formData.material_name" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task Type</label>
-                        <div class="flex gap-2 md:gap-4">
-                            <label class="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 md:p-3 border rounded-xl cursor-pointer transition text-sm md:text-base" :class="formData.task_type === 'Cutting' ? 'bg-brand-500 text-white border-brand-500' : 'bg-gray-50 dark:bg-darkslate-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'">
-                                <input type="radio" name="task_type" value="Cutting" x-model="formData.task_type" class="hidden">
-                                <i class="ri-scissors-cut-line"></i> <span class="truncate">Cutting</span>
+                <div class="p-6 overflow-y-auto">
+                    <form id="entryForm" @submit.prevent="submitEntry()" class="space-y-6">
+                        
+                        <!-- Material Select -->
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Material Context</label>
+                            <select x-model="formData.material_id" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-base font-medium focus:ring-2 focus:ring-brand-500 outline-none transition appearance-none">
+                                <option value="" disabled selected>Select a material...</option>
+                                <template x-for="mat in materials" :key="mat.id">
+                                    <option :value="mat.id" x-text="getMaterialName(mat)"></option>
+                                </template>
+                            </select>
+                            <div class="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                                <i class="ri-information-line"></i> Manage options in Control Panel
+                            </div>
+                        </div>
+                        
+                        <!-- Task Type -->
+                        <div class="p-1 bg-gray-100 dark:bg-darkslate-900 rounded-xl flex gap-1">
+                            <label class="flex-1 text-center cursor-pointer relative">
+                                <input type="radio" name="task_type" value="Cutting" x-model="formData.task_type" class="peer sr-only">
+                                <div class="py-3 rounded-lg text-sm font-bold text-gray-500 peer-checked:bg-white peer-checked:dark:bg-darkslate-800 peer-checked:text-red-500 peer-checked:shadow-sm transition">
+                                    <i class="ri-scissors-cut-fill mr-1"></i> Cutting
+                                </div>
                             </label>
-                            <label class="flex-1 flex items-center justify-center gap-1 md:gap-2 p-2 md:p-3 border rounded-xl cursor-pointer transition text-sm md:text-base" :class="formData.task_type === 'Engraving' ? 'bg-brand-500 text-white border-brand-500' : 'bg-gray-50 dark:bg-darkslate-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'">
-                                <input type="radio" name="task_type" value="Engraving" x-model="formData.task_type" class="hidden">
-                                <i class="ri-fire-line"></i> <span class="truncate">Engraving</span>
+                            <label class="flex-1 text-center cursor-pointer relative">
+                                <input type="radio" name="task_type" value="Engraving" x-model="formData.task_type" class="peer sr-only">
+                                <div class="py-3 rounded-lg text-sm font-bold text-gray-500 peer-checked:bg-white peer-checked:dark:bg-darkslate-800 peer-checked:text-orange-500 peer-checked:shadow-sm transition">
+                                    <i class="ri-fire-fill mr-1"></i> Engraving
+                                </div>
                             </label>
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                        <!-- Main Parameters -->
                         <div>
-                            <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Speed</label>
-                            <input type="number" step="0.1" x-model="formData.speed" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">Core Parameters</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 relative focus-within:ring-2 focus-within:ring-brand-500 transition">
+                                    <label class="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-1"><i class="ri-dashboard-3-line"></i> Speed</label>
+                                    <div class="flex items-center">
+                                        <input type="number" step="0.1" x-model="formData.speed" required class="w-full bg-transparent text-xl font-bold font-mono outline-none dark:text-white">
+                                        <span class="text-gray-400 text-xs ml-1">mm/s</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 relative focus-within:ring-2 focus-within:ring-brand-500 transition">
+                                    <label class="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-1"><i class="ri-flashlight-line"></i> Power</label>
+                                    <div class="flex items-center">
+                                        <input type="number" step="0.1" max="100" x-model="formData.power" required class="w-full bg-transparent text-xl font-bold font-mono outline-none dark:text-white">
+                                        <span class="text-gray-400 text-xs ml-1">%</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl p-3 relative focus-within:ring-2 focus-within:ring-brand-500 transition">
+                                    <label class="text-xs font-bold text-gray-500 uppercase flex items-center gap-1 mb-1"><i class="ri-restart-line"></i> Passes</label>
+                                    <input type="text" x-model="formData.frequency_passes" required placeholder="1" class="w-full bg-transparent text-xl font-bold font-mono outline-none dark:text-white">
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Conditional: Holding Tabs -->
+                        <div x-show="formData.task_type === 'Cutting'" x-collapse>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Holding Tabs / Bridges <span class="text-gray-400 font-normal text-xs ml-2">(Optional)</span></label>
+                            <input type="text" x-model="formData.holding_tabs" placeholder="e.g., 1mm every 50mm" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 font-medium text-sm focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        </div>
+
+                        <!-- Rating & Image Row -->
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Result Quality (Rating)</label>
+                                <div class="flex gap-2">
+                                    <template x-for="i in 5">
+                                        <button type="button" @click="formData.rating = i" class="text-3xl focus:outline-none transition group hover:scale-110">
+                                            <i :class="i <= formData.rating ? 'ri-star-fill text-yellow-400' : 'ri-star-line text-gray-300 dark:text-gray-600 group-hover:text-yellow-200'"></i>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Upload Photo</label>
+                                <label class="flex items-center gap-3 w-full bg-gray-50 dark:bg-darkslate-900 border border-dashed border-gray-300 dark:border-gray-600 hover:border-brand-500 dark:hover:border-brand-500 rounded-xl px-4 py-2 cursor-pointer transition">
+                                    <div class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400"><i class="ri-upload-cloud-2-line"></i></div>
+                                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400 truncate" x-text="selectedFile ? selectedFile.name : 'Choose image...'"></div>
+                                    <input type="file" @change="handleFileChange" accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
                         <div>
-                            <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Power (%)</label>
-                            <input type="number" step="0.1" max="100" x-model="formData.power" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Additional Notes</label>
+                            <textarea x-model="formData.notes" rows="3" placeholder="Kerf tests, focus offsets, material warpage..." class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none transition resize-y"></textarea>
                         </div>
-                        <div x-show="formData.task_type === 'Cutting'">
-                            <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Tab (%)</label>
-                            <input type="number" step="0.1" max="100" x-model="formData.tab_power" placeholder="None" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
+                        
+                    </form>
+                </div>
+                
+                <div class="p-5 border-t border-gray-100 dark:border-white/5 bg-gray-50/80 dark:bg-darkslate-900/80 flex justify-end gap-3 sticky bottom-0">
+                    <label class="flex items-center gap-2 cursor-pointer mr-auto">
+                        <div class="relative">
+                            <input type="checkbox" x-model="formData.is_pinned" class="sr-only">
+                            <div class="block w-10 h-6 bg-gray-200 dark:bg-gray-700 rounded-full transition-colors" :class="formData.is_pinned ? 'bg-brand-500' : ''"></div>
+                            <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform" :class="formData.is_pinned ? 'translate-x-4' : ''"></div>
                         </div>
-                        <div>
-                            <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">Passes</label>
-                            <input type="text" x-model="formData.frequency_passes" required placeholder="e.g. 1" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-2 md:px-3 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition">
-                        </div>
-                    </div>
+                        <span class="text-sm font-bold text-gray-600 dark:text-gray-300">Pin to start</span>
+                    </label>
 
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rating</label>
-                        <div class="flex gap-1 md:gap-2">
-                            <template x-for="i in 5">
-                                <i @click="formData.rating = i" class="text-3xl md:text-3xl cursor-pointer transition hover:scale-110" :class="i <= formData.rating ? 'ri-star-fill text-yellow-400' : 'ri-star-line text-gray-300 dark:text-gray-600'"></i>
-                            </template>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes</label>
-                        <textarea x-model="formData.notes" rows="2" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 md:px-4 py-2 text-sm md:text-base focus:ring-2 focus:ring-brand-500 outline-none transition resize-none"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" x-text="isEditing ? 'Update Image (Optional)' : 'Image Result'"></label>
-                        <input type="file" @change="handleFileChange" accept="image/*" class="w-full block text-xs md:text-sm text-gray-500 dark:text-gray-400
-                            file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-3 md:file:px-4
-                            file:rounded-full file:border-0
-                            file:text-xs md:file:text-sm file:font-semibold
-                            file:bg-brand-50 file:text-brand-700
-                            dark:file:bg-brand-900/30 dark:file:text-brand-400
-                            hover:file:bg-brand-100 transition">
-                    </div>
-
-                    <div class="pt-2 md:pt-4 flex justify-end gap-2 md:gap-3">
-                        <button type="button" @click="closeModal()" class="px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-sm md:text-base text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-darkslate-700 transition">Cancel</button>
-                        <button type="submit" class="px-4 md:px-6 py-1.5 md:py-2 rounded-xl text-sm md:text-base bg-brand-600 hover:bg-brand-500 text-white font-medium shadow-md shadow-brand-500/30 transition flex items-center gap-2" :disabled="loading">
-                            <i class="ri-save-line" x-show="!loading"></i>
-                            <i class="ri-loader-4-line animate-spin" x-show="loading"></i>
-                            Save
-                        </button>
-                    </div>
-                </form>
+                    <button type="button" @click="closeModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700 transition">Cancel</button>
+                    <button type="submit" form="entryForm" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white shadow-lg shadow-brand-500/30 transition flex items-center gap-2 transform active:scale-95" :disabled="loading">
+                        <i class="ri-save-line" x-show="!loading"></i>
+                        <i class="ri-loader-4-line animate-spin" x-show="loading"></i>
+                        Save Config
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- View Display Modal -->
-        <div x-cloak x-show="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/60 backdrop-blur-sm p-4">
-            <div @click.away="closeViewModal()" class="bg-white dark:bg-darkslate-800 rounded-2xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform transition-all p-4 md:p-6 flex flex-col max-h-[90vh]">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl md:text-2xl font-bold dark:text-white" x-text="activeEntry?.material_name"></h2>
-                    <button @click="closeViewModal()" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                        <i class="ri-close-line text-xl md:text-2xl"></i>
-                    </button>
+        <!-- MATERIAL MODAL (Add/Edit Material) -->
+        <div x-cloak x-show="isMaterialModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div x-show="isMaterialModalOpen" @click="closeMaterialModal()" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            
+            <div x-show="isMaterialModalOpen" x-transition.scale class="bg-white dark:bg-darkslate-800 rounded-3xl w-full max-w-sm shadow-2xl relative z-10 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-white/5 flex justify-between items-center bg-gray-50/50 dark:bg-darkslate-900/50">
+                    <h2 class="text-xl font-bold dark:text-white" x-text="materialFormData.id ? 'Edit Material' : 'New Material'"></h2>
                 </div>
-
-                <div class="overflow-y-auto pr-2">
-                    <div class="flex items-center gap-2 mb-4">
-                        <span class="px-3 py-1 text-xs font-semibold rounded-md bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400" x-text="activeEntry?.task_type"></span>
-                        <div class="flex text-yellow-400 text-sm">
-                            <template x-for="i in 5">
-                                <i :class="i <= (activeEntry?.rating || 0) ? 'ri-star-fill' : 'ri-star-line'"></i>
-                            </template>
-                        </div>
-                    </div>
-
-                    <template x-if="activeEntry?.image_path">
-                        <img :src="'/' + activeEntry?.image_path" class="w-full h-48 md:h-64 object-cover rounded-xl mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
-                    </template>
-
-                    <div class="bg-gray-50 dark:bg-slate-900 rounded-xl p-3 grid grid-cols-4 gap-2 mb-4 text-center border border-gray-100 dark:border-gray-800">
+                <div class="p-6">
+                    <form @submit.prevent="submitMaterial()" class="space-y-4">
                         <div>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Speed</p>
-                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.speed"></p>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Base Type *</label>
+                            <select x-model="materialFormData.base_type" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none appearance-none">
+                                <option value="Plywood">Plywood</option>
+                                <option value="Solid Wood">Solid Wood</option>
+                                <option value="MDF">MDF</option>
+                                <option value="Acrylic">Acrylic</option>
+                                <option value="Leather">Leather</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
                         <div>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Power</p>
-                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.power + '%'"></p>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Brand / Name <span class="text-gray-400 font-normal ml-1">(Optional)</span></label>
+                            <input x-model="materialFormData.name_brand" type="text" placeholder="e.g. Hallu, Surya Ply" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
                         </div>
-                        <div>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Tabs</p>
-                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.tab_power ? activeEntry?.tab_power + '%' : '-'"></p>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Thickness (mm)</label>
+                                <input x-model="materialFormData.thickness_mm" type="number" step="0.1" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Grade</label>
+                                <input x-model="materialFormData.grade" type="text" placeholder="e.g. BWR, A" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Passes</p>
-                            <p class="font-bold text-base dark:text-white" x-text="activeEntry?.frequency_passes"></p>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Original Notes</h3>
-                        <p class="text-sm dark:text-gray-200 bg-gray-50 dark:bg-darkslate-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800" x-text="activeEntry?.notes || 'No original notes.'"></p>
-                    </div>
-
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Situational Comments</h3>
                         
-                        <div class="space-y-3 mb-4">
-                            <template x-for="comment in activeEntry?.comments" :key="comment.id">
-                                <div class="bg-gray-50 dark:bg-darkslate-900 border border-gray-100 dark:border-gray-800 p-3 rounded-xl text-sm">
-                                    <p class="dark:text-gray-200" x-text="comment.text"></p>
-                                    <p class="text-xs text-brand-600 dark:text-brand-400 mt-2 font-medium" x-text="new Date(comment.created_at).toLocaleString()"></p>
-                                </div>
-                            </template>
-                            <template x-if="!activeEntry?.comments || activeEntry.comments.length === 0">
-                                <p class="text-sm text-gray-500 italic">No comments added yet.</p>
-                            </template>
+                        <div class="pt-4 flex justify-end gap-3 mt-4 border-t border-gray-100 dark:border-gray-800">
+                            <button type="button" @click="closeMaterialModal()" class="px-5 py-2 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-darkslate-700">Cancel</button>
+                            <button type="submit" class="px-6 py-2 rounded-xl text-sm font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-md">Save</button>
                         </div>
-                    </div>
-                </div>
-
-                <div class="mt-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <form @submit.prevent="submitComment()" class="flex gap-2">
-                        <input x-model="newCommentText" type="text" placeholder="Type a new comment..." required class="flex-grow bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-brand-500 outline-none transition">
-                        <button type="submit" class="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2 rounded-xl text-sm font-medium transition flex items-center shadow-md shadow-brand-500/30" :disabled="commentLoading">
-                            <i class="ri-send-plane-fill" x-show="!commentLoading"></i>
-                            <i class="ri-loader-4-line animate-spin" x-show="commentLoading"></i>
-                        </button>
                     </form>
                 </div>
+            </div>
+        </div>
 
+        <!-- View Detail Modal -->
+        <!-- Reuse existing view modal logic but update UI heavily -->
+        <!-- Omitted massive boilerplate, same concept, styled nicely -->
+        <!-- View Display Modal -->
+        <div x-cloak x-show="isViewModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div x-show="isViewModalOpen" @click="closeViewModal()" x-transition.opacity class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            
+            <div x-show="isViewModalOpen" x-transition.scale class="bg-white dark:bg-darkslate-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[90vh] relative z-10">
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-darkslate-900/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xl shadow-inner">
+                            <i :class="activeEntry?.task_type === 'Cutting' ? 'ri-scissors-cut-fill text-red-500' : 'ri-fire-fill text-orange-500'"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold dark:text-white leading-tight" x-text="activeEntry ? getMaterialName(activeEntry.material) : ''"></h2>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest" x-text="activeEntry?.task_type"></p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="openEditModal(activeEntry); closeViewModal()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition"><i class="ri-edit-line"></i></button>
+                        <button @click="deleteEntry(activeEntry.id)" class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition"><i class="ri-delete-bin-line"></i></button>
+                        <button @click="closeViewModal()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition ml-2"><i class="ri-close-line"></i></button>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto p-6">
+                    <template x-if="activeEntry?.image_path">
+                        <div class="w-full h-64 rounded-2xl overflow-hidden mb-6 shadow-md border border-gray-100 dark:border-gray-800 relative group bg-black">
+                            <img :src="'/' + activeEntry?.image_path" class="w-full h-full object-contain">
+                        </div>
+                    </template>
+
+                    <div class="bg-gray-50 dark:bg-black/30 rounded-2xl p-4 grid grid-cols-4 gap-2 mb-6 border border-gray-100 dark:border-white/5">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Speed</p>
+                            <p class="font-extrabold text-xl text-gray-900 dark:text-white font-mono" x-text="activeEntry?.speed"></p>
+                        </div>
+                        <div class="text-center border-l border-gray-200 dark:border-gray-800">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Power</p>
+                            <p class="font-extrabold text-xl text-orange-600 dark:text-orange-400 font-mono" x-text="activeEntry?.power + '%'"></p>
+                        </div>
+                        <div class="text-center border-l border-gray-200 dark:border-gray-800">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Passes</p>
+                            <p class="font-extrabold text-xl text-gray-900 dark:text-white font-mono" x-text="activeEntry?.frequency_passes"></p>
+                        </div>
+                        <div class="text-center border-l border-gray-200 dark:border-gray-800">
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Rating</p>
+                            <p class="font-extrabold text-xl text-yellow-500 font-mono flex items-center justify-center"><i class="ri-star-fill text-sm mr-1"></i> <span x-text="activeEntry?.rating"></span></p>
+                        </div>
+                    </div>
+
+                    <div x-show="activeEntry?.task_type === 'Cutting' && activeEntry?.holding_tabs" class="mb-6">
+                        <div class="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 px-4 py-3 rounded-xl text-sm font-medium border border-blue-100 dark:border-blue-900/50 flex gap-3 items-center">
+                            <i class="ri-git-commit-line text-xl"></i>
+                            <div>
+                                <strong class="block text-xs uppercase tracking-wider mb-0.5 opacity-80">Holding Tabs Setup</strong>
+                                <span x-text="activeEntry?.holding_tabs"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6" x-show="activeEntry?.notes">
+                        <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3"><i class="ri-sticky-note-line align-middle mr-1"></i> Author's Notes</h3>
+                        <p class="text-base text-gray-800 dark:text-gray-200 font-medium leading-relaxed bg-gray-50 dark:bg-darkslate-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800" x-text="activeEntry?.notes"></p>
+                    </div>
+
+                </div>
             </div>
         </div>
 
@@ -390,52 +623,75 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
                 isDark: true,
-                viewMode: 'grid', // 'grid' or 'table'
+                currentRoute: 'dashboard', // dashboard, materials
+                viewMode: 'grid', // grid, table, grouped
+                taskTypeTab: 'All', // All, Cutting, Engraving
+                materials: [],
                 entries: [],
                 search: '',
-                filterType: '',
-                filterRating: '',
 
-                // Form Modal State
+                // Forms
                 isModalOpen: false,
                 isCloning: false,
                 isEditing: false,
                 loading: false,
                 selectedFile: null,
                 activeEntryId: null,
-                formData: {
-                    material_name: '',
-                    task_type: 'Cutting',
-                    speed: 100,
-                    power: 50,
-                    frequency_passes: '1',
-                    rating: 3,
-                    tab_power: '',
-                    notes: ''
-                },
+                formData: { material_id: '', task_type: 'Cutting', speed: 100, power: 50, frequency_passes: '1', rating: 3, holding_tabs: '', notes: '', is_pinned: false },
+                
+                isMaterialModalOpen: false,
+                materialFormData: { id: null, base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' },
 
-                // View Modal State
                 isViewModalOpen: false,
                 activeEntry: null,
-                newCommentText: '',
-                commentLoading: false,
 
                 initData() {
                     if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                         this.isDark = false;
                         document.documentElement.classList.remove('dark');
                     }
+                    this.fetchMaterials();
                     this.fetchEntries();
                 },
 
                 toggleTheme() {
                     this.isDark = !this.isDark;
-                    if (this.isDark) {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('theme', 'light');
+                    if (this.isDark) { document.documentElement.classList.add('dark'); localStorage.setItem('theme', 'dark'); } 
+                    else { document.documentElement.classList.remove('dark'); localStorage.setItem('theme', 'light'); }
+                },
+
+                get sortedEntries() {
+                    return [...this.entries].sort((a,b) => b.is_pinned - a.is_pinned);
+                },
+
+                get groupedEntries() {
+                    let groups = {};
+                    this.entries.forEach(e => {
+                        let mId = e.material.id;
+                        if (!groups[mId]) groups[mId] = { material: e.material, entries: [] };
+                        groups[mId].entries.push(e);
+                    });
+                    // Sort inside groups by pin
+                    Object.values(groups).forEach(g => g.entries.sort((a,b) => b.is_pinned - a.is_pinned));
+                    return Object.values(groups);
+                },
+
+                getMaterialName(m) {
+                    if (!m) return 'Unknown Material';
+                    let parts = [];
+                    if (m.name_brand) parts.push(m.name_brand); else parts.push(m.base_type);
+                    if (m.grade) parts.push('- ' + m.grade);
+                    let title = parts.join(' ');
+                    if (m.thickness_mm) title += ' (' + m.thickness_mm + 'mm)';
+                    return title;
+                },
+
+                async fetchMaterials() {
+                    try {
+                        let res = await fetch('/api/materials');
+                        this.materials = await res.json();
+                    } catch (e) {
+                        console.error(e);
                     }
                 },
 
@@ -443,159 +699,110 @@
                     let url = '/api/entries?';
                     const params = new URLSearchParams();
                     if (this.search) params.append('search', this.search);
-                    if (this.filterType) params.append('task_type', this.filterType);
-                    if (this.filterRating) params.append('rating', this.filterRating);
+                    if (this.taskTypeTab !== 'All') params.append('task_type', this.taskTypeTab);
                     
                     try {
                         const res = await fetch(url + params.toString());
                         this.entries = await res.json();
-                        // If view modal is open, refresh active entry data
                         if (this.activeEntry) {
                             this.activeEntry = this.entries.find(e => e.id === this.activeEntry.id) || this.activeEntry;
                         }
-                    } catch (e) {
-                        console.error('Failed to fetch', e);
-                    }
+                    } catch (e) { console.error('Failed to fetch entries', e); }
                 },
 
+                async togglePin(id) {
+                    try {
+                        const res = await fetch(`/api/entries/${id}/pin`, { method: 'PUT' });
+                        if (res.ok) this.fetchEntries();
+                    } catch (e) { console.error(e); }
+                },
+
+                // Modal operations
                 openModal() {
-                    this.resetForm();
-                    this.isCloning = false;
-                    this.isEditing = false;
-                    this.activeEntryId = null;
-                    this.isModalOpen = true;
-                },
-
-                openCloneModal(entry) {
-                    this.formData = {
-                        material_name: entry.material_name,
-                        task_type: entry.task_type,
-                        speed: entry.speed,
-                        power: entry.power,
-                        frequency_passes: entry.frequency_passes,
-                        rating: entry.rating,
-                        tab_power: entry.tab_power || '',
-                        notes: entry.notes
-                    };
-                    this.selectedFile = null;
-                    this.activeEntryId = null;
-                    this.isCloning = true;
-                    this.isEditing = false;
-                    this.isModalOpen = true;
+                    this.formData = { material_id: '', task_type: 'Cutting', speed: 100, power: 50, frequency_passes: '1', rating: 3, holding_tabs: '', notes: '', is_pinned: false };
+                    this.selectedFile = null; this.isCloning = false; this.isEditing = false; this.activeEntryId = null; this.isModalOpen = true;
                 },
 
                 openEditModal(entry) {
                     this.formData = {
-                        material_name: entry.material_name,
-                        task_type: entry.task_type,
-                        speed: entry.speed,
-                        power: entry.power,
-                        frequency_passes: entry.frequency_passes,
-                        rating: entry.rating,
-                        tab_power: entry.tab_power || '',
-                        notes: entry.notes
+                        material_id: entry.material_id, task_type: entry.task_type, speed: entry.speed,
+                        power: entry.power, frequency_passes: entry.frequency_passes, rating: entry.rating,
+                        holding_tabs: entry.holding_tabs || '', notes: entry.notes || '', is_pinned: entry.is_pinned
                     };
-                    this.selectedFile = null;
-                    this.activeEntryId = entry.id;
-                    this.isEditing = true;
-                    this.isCloning = false;
-                    this.isModalOpen = true;
+                    this.selectedFile = null; this.activeEntryId = entry.id; this.isEditing = true; this.isCloning = false; this.isModalOpen = true;
                 },
 
-                closeModal() {
-                    this.isModalOpen = false;
+                closeModal() { this.isModalOpen = false; },
+
+                openMaterialModal(mat = null) {
+                    if (mat) {
+                        this.materialFormData = { ...mat };
+                    } else {
+                        this.materialFormData = { id: null, base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' };
+                    }
+                    this.isMaterialModalOpen = true;
                 },
 
-                openViewModal(entry) {
-                    this.activeEntry = entry;
-                    this.newCommentText = '';
-                    this.isViewModalOpen = true;
-                },
+                closeMaterialModal() { this.isMaterialModalOpen = false; },
+
+                openViewModal(entry) { this.activeEntry = entry; this.isViewModalOpen = true; },
                 
-                closeViewModal() {
-                    this.isViewModalOpen = false;
+                closeViewModal() { this.isViewModalOpen = false; },
+
+                handleFileChange(e) { this.selectedFile = e.target.files[0]; },
+
+                async submitMaterial() {
+                    try {
+                        let method = this.materialFormData.id ? 'PUT' : 'POST';
+                        let url = this.materialFormData.id ? `/api/materials/${this.materialFormData.id}` : '/api/materials';
+                        let payload = {...this.materialFormData};
+                        if (payload.thickness_mm === '') payload.thickness_mm = null;
+                        
+                        await fetch(url, {
+                            method, headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(payload)
+                        });
+                        this.closeMaterialModal();
+                        this.fetchMaterials();
+                    } catch (e) { console.error(e); alert('Error saving material'); }
                 },
 
-                resetForm() {
-                    this.formData = {
-                        material_name: '',
-                        task_type: 'Cutting',
-                        speed: 100,
-                        power: 50,
-                        frequency_passes: '1',
-                        rating: 3,
-                        tab_power: '',
-                        notes: ''
-                    };
-                    this.selectedFile = null;
-                },
-
-                handleFileChange(e) {
-                    this.selectedFile = e.target.files[0];
+                async deleteMaterial(id) {
+                    if(!confirm("Delete material? This might break entries if not handled!")) return;
+                    try {
+                        await fetch(`/api/materials/${id}`, { method: 'DELETE' });
+                        this.fetchMaterials();
+                    } catch (e) { console.error(e); }
                 },
 
                 async submitEntry() {
                     this.loading = true;
                     const fd = new FormData();
                     Object.keys(this.formData).forEach(key => {
-                        if (key === 'tab_power' && this.formData[key] === '') return;
-                        fd.append(key, this.formData[key]);
+                        if (key === 'holding_tabs' && this.formData[key] === '') return;
+                        if (this.formData[key] !== null && this.formData[key] !== undefined) {
+                            fd.append(key, this.formData[key]);
+                        }
                     });
-                    if (this.selectedFile) {
-                        fd.append('image', this.selectedFile);
-                    }
+                    if (this.selectedFile) fd.append('image', this.selectedFile);
 
                     try {
-                        let url = '/api/entries';
-                        let method = 'POST';
-                        
-                        if (this.isEditing && this.activeEntryId) {
-                            url = `/api/entries/${this.activeEntryId}`;
-                            method = 'PUT';
-                        }
-
-                        await fetch(url, {
-                            method: method,
-                            body: fd
-                        });
+                        let url = this.isEditing ? `/api/entries/${this.activeEntryId}` : '/api/entries';
+                        let method = this.isEditing ? 'PUT' : 'POST';
+                        await fetch(url, { method: method, body: fd });
                         this.closeModal();
                         this.fetchEntries();
-                    } catch (e) {
-                        console.error('Failed to save', e);
-                        alert("Error saving entry");
-                    } finally {
-                        this.loading = false;
-                    }
+                    } catch (e) { console.error('Failed to save', e); alert("Error saving entry"); } 
+                    finally { this.loading = false; }
                 },
 
                 async deleteEntry(id) {
-                    if(!confirm("Are you sure you want to delete this log?")) return;
+                    if(!confirm("Delete log entry?")) return;
                     try {
-                        await fetch(`/api/entries/${id}`, {
-                            method: 'DELETE'
-                        });
+                        await fetch(`/api/entries/${id}`, { method: 'DELETE' });
+                        this.closeViewModal();
                         this.fetchEntries();
-                    } catch (e) {
-                        console.error('Failed to delete', e);
-                    }
-                },
-
-                async submitComment() {
-                    if (!this.newCommentText.trim() || !this.activeEntry) return;
-                    this.commentLoading = true;
-                    try {
-                        await fetch(`/api/entries/${this.activeEntry.id}/comments`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ text: this.newCommentText })
-                        });
-                        this.newCommentText = '';
-                        await this.fetchEntries(); // Reload activeEntry data
-                    } catch (e) {
-                        console.error('Failed to post comment', e);
-                    } finally {
-                        this.commentLoading = false;
-                    }
+                    } catch (e) { console.error(e); }
                 }
             }));
         });
