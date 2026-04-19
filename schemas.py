@@ -18,6 +18,7 @@ class Comment(CommentBase):
         from_attributes = True
 
 class MaterialBase(BaseModel):
+    display_name: str
     base_type: str
     name_brand: Optional[str] = None
     thickness_mm: Optional[float] = None

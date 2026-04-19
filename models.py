@@ -6,7 +6,8 @@ from database import Base
 class Material(Base):
     __tablename__ = "materials"
     id = Column(Integer, primary_key=True, index=True)
-    base_type = Column(String, nullable=False) # Solid Wood, Plywood, MDF, Acrylic, Leather, Other
+    display_name = Column(String, nullable=True) # Used for formatting the display properly
+    base_type = Column(String, nullable=False) # Configurable dynamic string
     name_brand = Column(String, nullable=True) # Optional for generic MDF
     thickness_mm = Column(Float, nullable=True)
     grade = Column(String, nullable=True) # Optional, mostly for Ply

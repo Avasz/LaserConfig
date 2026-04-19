@@ -333,7 +333,7 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-gray-800 text-xs text-gray-500 uppercase tracking-widest">
@@ -366,6 +366,27 @@
                             </template>
                         </tbody>
                     </table>
+                </div>
+                
+                <div class="md:hidden flex flex-col gap-4">
+                    <template x-for="mat in materials" :key="mat.id">
+                        <div class="bg-white dark:bg-darkslate-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h3 class="font-bold text-brand-600 dark:text-brand-400 text-lg leading-tight" x-text="getMaterialName(mat)"></h3>
+                                    <p class="text-sm text-gray-500 font-medium mt-1">
+                                        <span x-text="mat.base_type"></span>
+                                        <template x-if="mat.grade"><span x-text="' • ' + mat.grade"></span></template>
+                                    </p>
+                                </div>
+                                <span class="bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-lg text-xs font-bold font-mono min-w-[max-content]" x-text="mat.thickness_mm ? mat.thickness_mm + 'mm' : '—'"></span>
+                            </div>
+                            <div class="flex gap-2 justify-end border-t border-gray-100 dark:border-gray-800 pt-3">
+                                <button @click="openMaterialModal(mat)" class="flex-1 py-2 bg-gray-50 dark:bg-darkslate-800 rounded-xl text-gray-700 dark:text-gray-300 font-bold text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition"><i class="ri-edit-line mr-1"></i> Edit</button>
+                                <button @click="deleteMaterial(mat.id)" class="flex-1 py-2 bg-red-50 dark:bg-red-900/10 rounded-xl text-red-600 dark:text-red-400 font-bold text-sm hover:bg-red-100 dark:hover:bg-red-900/20 transition"><i class="ri-delete-bin-line mr-1"></i> Delete</button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -511,19 +532,30 @@
                 <div class="p-6">
                     <form @submit.prevent="submitMaterial()" class="space-y-4">
                         <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Base Type *</label>
-                            <select x-model="materialFormData.base_type" required class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none appearance-none">
-                                <option value="Plywood">Plywood</option>
-                                <option value="Solid Wood">Solid Wood</option>
-                                <option value="MDF">MDF</option>
-                                <option value="Acrylic">Acrylic</option>
-                                <option value="Leather">Leather</option>
-                                <option value="Other">Other</option>
-                            </select>
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Display Name *</label>
+                            <input x-model="materialFormData.display_name" required type="text" placeholder="e.g. Hallu Plywood, Sagun Wood" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
                         </div>
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Brand / Name <span class="text-gray-400 font-normal ml-1">(Optional)</span></label>
-                            <input x-model="materialFormData.name_brand" type="text" placeholder="e.g. Hallu, Surya Ply" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Base Type *</label>
+                                <input x-model="materialFormData.base_type" list="baseTypes" required placeholder="Select or type..." class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                                <datalist id="baseTypes">
+                                    <option value="Plywood">
+                                    <option value="Solid Wood">
+                                    <option value="MDF">
+                                    <option value="Acrylic">
+                                    <option value="Leather">
+                                    <option value="Paper">
+                                    <option value="Cardboard">
+                                    <template x-for="t in uniqueBaseTypes" :key="t">
+                                        <option :value="t"></option>
+                                    </template>
+                                </datalist>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Brand / Name <span class="text-gray-400 font-normal ml-1">(Optional)</span></label>
+                                <input x-model="materialFormData.name_brand" type="text" placeholder="e.g. Hallu, Surya Ply" class="w-full bg-gray-50 dark:bg-darkslate-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-brand-500 outline-none">
+                            </div>
                         </div>
                         <div class="flex gap-4">
                             <div class="flex-1">
@@ -638,7 +670,7 @@
                 formData: { material_id: '', task_type: 'Cutting', speed: 100, power: 50, frequency_passes: '1', rating: 3, holding_tabs: '', notes: '', is_pinned: false },
                 
                 isMaterialModalOpen: false,
-                materialFormData: { id: null, base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' },
+                materialFormData: { id: null, display_name: '', base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' },
 
                 isViewModalOpen: false,
                 activeEntry: null,
@@ -674,12 +706,15 @@
                     return Object.values(groups);
                 },
 
+                get uniqueBaseTypes() {
+                    const defaults = ['Plywood', 'Solid Wood', 'MDF', 'Acrylic', 'Leather', 'Other', 'Paper', 'Cardboard'];
+                    const types = new Set(this.materials.map(m => m.base_type));
+                    return Array.from(types).filter(t => !defaults.includes(t));
+                },
+
                 getMaterialName(m) {
                     if (!m) return 'Unknown Material';
-                    let parts = [];
-                    if (m.name_brand) parts.push(m.name_brand); else parts.push(m.base_type);
-                    if (m.grade) parts.push('- ' + m.grade);
-                    let title = parts.join(' ');
+                    let title = m.display_name || m.name_brand || m.base_type;
                     if (m.thickness_mm) title += ' (' + m.thickness_mm + 'mm)';
                     return title;
                 },
@@ -734,9 +769,9 @@
 
                 openMaterialModal(mat = null) {
                     if (mat) {
-                        this.materialFormData = { ...mat };
+                        this.materialFormData = { ...mat, display_name: mat.display_name || '' };
                     } else {
-                        this.materialFormData = { id: null, base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' };
+                        this.materialFormData = { id: null, display_name: '', base_type: 'Plywood', name_brand: '', thickness_mm: '', grade: '' };
                     }
                     this.isMaterialModalOpen = true;
                 },
